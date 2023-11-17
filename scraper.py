@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-from schemas import CarInfo
+from carleader_bot.src.schemas import CarInfo
 
 
 # Function to scrape a website and find elements by class value

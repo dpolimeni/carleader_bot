@@ -1,13 +1,14 @@
 import json
 from typing import List
 from fastapi import FastAPI
+import os
 
-from chatbot.routes import router as chatbot_router
+from src.chatbot.routes import router as chatbot_router
 
-from chatbot.schemas import Message
-from schemas import CarInfo
+from src.chatbot.schemas import Message
+from src.schemas import CarInfo
 
-from config import configuration
+from src.config import configuration
 
 app = FastAPI(title="Chatbot app")
 
@@ -16,6 +17,8 @@ app.include_router(chatbot_router, prefix="/chatbot", tags=["chatbot"])
 
 @app.get("/cars/all", response_model=List[CarInfo])
 def get_cars():
-    with open("cars.json", "r") as f:
+    print(os.getcwd())
+    print(os.listdir())
+    with open("src/cars.json", "r") as f:
         cars = json.loads(f.read())
     return cars

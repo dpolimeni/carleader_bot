@@ -21,3 +21,9 @@ class CarInfo(BaseModel):
     registration: str
     link: str
     exposition: str
+
+
+class OpenaiConfig(BaseModel):
+    openai_key: str
+    chat_model_version: str
+    emb_model_version: str = None
