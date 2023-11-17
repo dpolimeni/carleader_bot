@@ -1,4 +1,4 @@
 # carleader_bot
 
 TO RUN EXECUTE ("[]" means optional):
-- uvicorn:main --reload [--port xxx]
+- uvicorn sr.main:app --reload [--port xxx]
