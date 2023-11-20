@@ -63,4 +63,12 @@ Questa è la lista delle macchine:
             Message(sender="Cliente", message=query),
             Message(sender="AI", message=response),
         ]
+
+    agent = qa.init_agent()
+
+    agent.invoke(
+        {
+            "input": f"Questa è la lista delle macchine:\n{formatted_json}. Questa è la richiesta del cliente: {query}"
+        }
+    )
     return ChatMessage(**{"sender": "AI", "message": response, "chat_user": user})
