@@ -7,5 +7,9 @@ class Message(BaseModel):
     message: str = Field(..., description="Message content")
 
 
+class ChatMessage(Message):
+    chat_user: str = Field(None, description="identifier of the chat")
+
+
 class Conversation(BaseModel):
     messages: List[Message]

@@ -1,14 +1,15 @@
 import json
+from datetime import datetime
 from typing import List
 from fastapi import FastAPI
 import os
 
 from src.chatbot.routes import router as chatbot_router
-
 from src.chatbot.schemas import Message
 from src.schemas import CarInfo
 
-from src.config import configuration
+from src.utils import app_manager
+
 
 app = FastAPI(title="Chatbot app")
 
