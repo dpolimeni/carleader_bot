@@ -6,8 +6,6 @@ from src.schemas import OpenaiConfig
 from typing import List, Any
 
 ## TODO check if we need a retriever
-# from langchain.text_splitter import CharacterTextSplitter
-# from langchain.vectorstores import FAISS
 
 
 class QaService(BaseQA):

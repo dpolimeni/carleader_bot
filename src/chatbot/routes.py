@@ -28,14 +28,17 @@ async def chat(message: Message):
     qa = QaService(openai_config=openai_config)
 
     with open("src/cars.json", "r") as f:
-        cars = json.loads(f.read())
+        cars = json.load(f)
+
+    formatted_json = json.dumps(cars, indent=2)
 
     prompt = f"""Ti verranno fornite la lista delle macchine disponibili in un concessionario. 
-    Il tuo compito è servire i clienti per le domande riguardanti il concessionario.
-    Questa è la lista delle macchine:
-    {str(cars)}
+Il tuo compito è servire i clienti e proporgli le macchine più consone alle loro esigenze.
+Quando proponi una macchina al cliente descrivigli alcune caratteristiche ed allega sempre il link dell'auto.
+    
+Questa è la lista delle macchine:
+{formatted_json}
     """
-
     response = await qa.basic_answer(query, prompt)
 
     return {"sender": "AI", "message": response}
