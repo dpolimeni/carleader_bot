@@ -53,7 +53,7 @@ async def chat(message: ChatMessage):
         cars = json.load(f)
 
     formatted_json = json.dumps(cars, indent=2)
-
+    ## TODO implement a retriever
     prompt = f"""Ti verranno fornite la lista delle macchine disponibili in un concessionario. 
 Il tuo compito è servire i clienti e proporgli le macchine più consone alle loro esigenze.
 Quando proponi una macchina al cliente descrivigli alcune caratteristiche ed allega sempre il link dell'auto.
@@ -64,7 +64,6 @@ Questa è la conversazione con il cliente:
 Questa è la lista delle macchine:
 {formatted_json}
     """
-    print(conversation)
     response = await qa.basic_answer(query, context=prompt)
 
     chats[user].extend([Message(sender="AI", message=response)])
