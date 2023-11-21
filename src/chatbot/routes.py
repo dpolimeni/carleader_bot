@@ -1,25 +1,41 @@
-from fastapi import APIRouter
-from src.chatbot.schemas import Message, Conversation
+from fastapi import APIRouter, FastAPI
+import uuid
+import json
+from fastapi.exceptions import HTTPException
+from src.chatbot.schemas import Conversation, ChatMessage, Message
 from src.schemas import OpenaiConfig
 from src.config import configuration
 from src.chatbot.service import QaService
-
-import json
+from src.chatbot.utils import init_tools
+from langchain.vectorstores import FAISS
+from langchain.embeddings.openai import OpenAIEmbeddings
 
 router = APIRouter()
 
+agents = {}
+chats = {}
+tools = init_tools()
+
 
 @router.get("/chat", response_model=Conversation)
-async def get_messages():
-    return Conversation(
-        **{"messages": [Message(**{"sender": "test", "message": "test"})]}
-    )
+async def get_messages(chat_id: str):
+    messages = chats.get(chat_id)
+    try:
+        return Conversation(messages=messages)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"No chat found with id {chat_id}")
 
 
-@router.post("/chat", response_model=Message)
-async def chat(message: Message):
-    user = message.sender
+@router.post("/chat", response_model=ChatMessage)
+async def chat(message: ChatMessage):
+    user = message.chat_user if message.chat_user else str(uuid.uuid4())
     query = message.message
+
+    embeddings = OpenAIEmbeddings(api_key=configuration.openai_key)
+    new_db = FAISS.load_local("faiss_index", embeddings)
+    docs = new_db.similarity_search(query)
+
+    conversation = "\n".join([m.sender + ": " + m.message for m in chats.get(user, [])])
 
     openai_config = OpenaiConfig(
         openai_key=configuration.openai_key,
@@ -27,15 +43,31 @@ async def chat(message: Message):
     )
     qa = QaService(openai_config=openai_config)
 
-    with open("src/cars.json", "r") as f:
-        cars = json.loads(f.read())
+    if agents.get(user):
+        agent = agents.get(user)
+        chats[user].extend([Message(sender="Cliente", message=query)])
+    else:
+        agent = qa.init_agent(tools=tools)
+        agents[user] = agent
+        chats[user] = [Message(sender="Cliente", message=query)]
+
+    ## TODO save messages somewhere
+
+    # response = agent.invoke({"input": f"Cliente: {query}"})["output"]
+    relevant_cars = "\n".join([d.page_content for d in docs])
 
     prompt = f"""Ti verranno fornite la lista delle macchine disponibili in un concessionario. 
-    Il tuo compito è servire i clienti per le domande riguardanti il concessionario.
-    Questa è la lista delle macchine:
-    {str(cars)}
+Il tuo compito è servire i clienti e proporgli le macchine più consone alle loro esigenze.
+Quando proponi una macchina al cliente descrivigli alcune caratteristiche ed allega sempre il link dell'auto.
+
+Questa è la conversazione con il cliente:
+{conversation}
+    
+Questa è la lista delle macchine:
+{relevant_cars}
     """
+    response = await qa.basic_answer(query, context=prompt)
 
-    response = await qa.basic_answer(query, prompt)
+    chats[user].extend([Message(sender="AI", message=response)])
 
-    return {"sender": "AI", "message": response}
+    return ChatMessage(**{"sender": "AI", "message": response, "chat_user": user})

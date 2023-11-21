@@ -10,7 +10,7 @@ class CarInfo(BaseModel):
     gearbox: str
     engine: str
     power: str  # kw/Cv
-    mileage: float
+    mileage: str
     price: float
     type: str  # utilitaria/Berlina
     seats: int
