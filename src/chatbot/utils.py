@@ -22,3 +22,7 @@ def format_cars(cars_dict: List[Dict[str, str]]) -> str:
     registration: data di immatricolazione 
     link: link all'auto online
     """
+
+
+def init_tools():
+    return ["pippo"]

@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import List
 from fastapi import FastAPI
 import os
-
 from src.chatbot.routes import router as chatbot_router
 from src.chatbot.schemas import Message
 from src.schemas import CarInfo

@@ -34,7 +34,7 @@ class QaService(BaseQA):
 
         return response.content
 
-    def init_agent(self, tools: List = None):
+    def init_agent(self, tools: List[Tool] = None):
         agent_executor = create_conversational_retrieval_agent(
             tools=[
                 Tool.from_function(

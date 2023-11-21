@@ -1,22 +1,24 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, FastAPI
+import uuid
+import json
 from fastapi.exceptions import HTTPException
-from src.chatbot.schemas import Message, Conversation, ChatMessage
+from src.chatbot.schemas import Conversation, ChatMessage
 from src.schemas import OpenaiConfig
 from src.config import configuration
 from src.chatbot.service import QaService
-import uuid
-import json
+from src.chatbot.utils import init_tools
+
 
 router = APIRouter()
 
 chats = {}
+tools = init_tools()
 
 
 @router.get("/chat", response_model=Conversation)
 async def get_messages(chat_id: str):
     messages = chats.get(chat_id)
     try:
-        print(messages)
         return Conversation(messages=messages)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"No chat found with id {chat_id}")
@@ -38,37 +40,17 @@ async def chat(message: ChatMessage):
 
     formatted_json = json.dumps(cars, indent=2)
 
-    conversation = "\n".join([m.sender + ": " + m.message for m in chats.get(user, [])])
-
     prompt = f"""Ti verranno fornite la lista delle macchine disponibili in un concessionario. 
-Il tuo compito è servire i clienti e proporgli le macchine più consone alle loro esigenze.
 Quando proponi una macchina al cliente descrivigli alcune caratteristiche ed allega sempre il link dell'auto.
-
-Questa è la conversazione con il cliente:
-{conversation}
-    
 Questa è la lista delle macchine:
 {formatted_json}
     """
-    response = await qa.basic_answer(query, prompt)
     if chats.get(user):
-        chats[user].extend(
-            [
-                Message(sender="Cliente", message=query),
-                Message(sender="AI", message=response),
-            ]
-        )
+        agent = chats.get(user)
     else:
-        chats[user] = [
-            Message(sender="Cliente", message=query),
-            Message(sender="AI", message=response),
-        ]
+        agent = qa.init_agent(tools=tools)
 
-    agent = qa.init_agent()
+    ## TODO save messages somewhere
 
-    agent.invoke(
-        {
-            "input": f"Questa è la lista delle macchine:\n{formatted_json}. Questa è la richiesta del cliente: {query}"
-        }
-    )
+    response = agent.invoke({"input": f"{prompt}.\n\n Cliente: {query}"})["output"]
     return ChatMessage(**{"sender": "AI", "message": response, "chat_user": user})
