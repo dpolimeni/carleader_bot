@@ -2,6 +2,9 @@
 from typing import Dict, List, Any
 from langchain.agents import Tool
 import json
+from langchain.vectorstores import FAISS
+from langchain.embeddings.openai import OpenAIEmbeddings
+from src.config import configuration
 
 
 def format_cars(cars_dict: List[Dict[str, str]]) -> str:
@@ -26,19 +29,22 @@ def format_cars(cars_dict: List[Dict[str, str]]) -> str:
     """
 
 
-def retrieve_cars(placeholder: Any):
+def retrieve_cars(query: str):
     with open("src/cars.json", "r") as f:
         cars = json.load(f)
-
+    embeddings = OpenAIEmbeddings(api_key=configuration.openai_key)
+    new_db = FAISS.load_local("faiss_index", embeddings)
+    docs = new_db.similarity_search(query)
+    relevant_cars = "\n".join([d.page_content for d in docs])
     formatted_json = json.dumps(cars, indent=2)
-    return formatted_json
+    return relevant_cars
 
 
 def init_tools():
     tools = [
         Tool.from_function(
             func=retrieve_cars,
-            description="Usa questo tool per conoscere le macchine disponibili nel concessionario",
+            description="Usa questo tool per conoscere le macchine disponibili nel concessionario. In input prende una stringa che descrive le caratteristiche che cerchi in un'auto.",
             name="retrieve_cars",
         )
     ]

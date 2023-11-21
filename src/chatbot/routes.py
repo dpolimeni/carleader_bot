@@ -34,7 +34,6 @@ async def chat(message: ChatMessage):
     embeddings = OpenAIEmbeddings(api_key=configuration.openai_key)
     new_db = FAISS.load_local("faiss_index", embeddings)
     docs = new_db.similarity_search(query)
-    print("OBTAINED RECORDS", docs)
 
     conversation = "\n".join([m.sender + ": " + m.message for m in chats.get(user, [])])
 
@@ -55,11 +54,8 @@ async def chat(message: ChatMessage):
     ## TODO save messages somewhere
 
     # response = agent.invoke({"input": f"Cliente: {query}"})["output"]
-    with open("src/cars.json", "r") as f:
-        cars = json.load(f)
+    relevant_cars = "\n".join([d.page_content for d in docs])
 
-    formatted_json = json.dumps(cars, indent=2)
-    ## TODO implement a retriever
     prompt = f"""Ti verranno fornite la lista delle macchine disponibili in un concessionario. 
 Il tuo compito è servire i clienti e proporgli le macchine più consone alle loro esigenze.
 Quando proponi una macchina al cliente descrivigli alcune caratteristiche ed allega sempre il link dell'auto.
@@ -68,7 +64,7 @@ Questa è la conversazione con il cliente:
 {conversation}
     
 Questa è la lista delle macchine:
-{formatted_json}
+{relevant_cars}
     """
     response = await qa.basic_answer(query, context=prompt)
 
