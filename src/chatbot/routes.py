@@ -7,7 +7,8 @@ from src.schemas import OpenaiConfig
 from src.config import configuration
 from src.chatbot.service import QaService
 from src.chatbot.utils import init_tools
-
+from langchain.vectorstores import FAISS
+from langchain.embeddings.openai import OpenAIEmbeddings
 
 router = APIRouter()
 
@@ -29,6 +30,11 @@ async def get_messages(chat_id: str):
 async def chat(message: ChatMessage):
     user = message.chat_user if message.chat_user else str(uuid.uuid4())
     query = message.message
+
+    embeddings = OpenAIEmbeddings(api_key=configuration.openai_key)
+    new_db = FAISS.load_local("faiss_index", embeddings)
+    docs = new_db.similarity_search(query)
+    print("OBTAINED RECORDS", docs)
 
     conversation = "\n".join([m.sender + ": " + m.message for m in chats.get(user, [])])
 

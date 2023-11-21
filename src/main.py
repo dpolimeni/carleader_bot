@@ -1,16 +1,35 @@
 import json
-from datetime import datetime
-from typing import List
+from typing import List, Dict
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from langchain.embeddings.openai import OpenAIEmbeddings
 import os
 from src.chatbot.routes import router as chatbot_router
-from src.chatbot.schemas import Message
 from src.schemas import CarInfo
+from langchain.schema import Document
+from src.config import configuration
+from langchain.vectorstores import FAISS
 
-from src.utils import app_manager
+
+def build_content(car: Dict[str, str | int]) -> str:
+    content = [k + ": " + str(v) + "\n" for k, v in car.items()]
+    return "".join(content)
 
 
-app = FastAPI(title="Chatbot app")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the ML model
+    embeddings = OpenAIEmbeddings(api_key=configuration.openai_key)
+    with open("src/cars.json", "r") as f:
+        cars = json.load(f)
+        docs = [Document(page_content=build_content(c), metadata=c) for c in cars]
+        db = FAISS.from_documents(docs, embeddings)
+    db.save_local("faiss_index")
+    yield
+    # Clean up the ML models and release the resources
+
+
+app = FastAPI(title="Chatbot app", lifespan=lifespan)
 
 app.include_router(chatbot_router, prefix="/chatbot", tags=["chatbot"])
 
