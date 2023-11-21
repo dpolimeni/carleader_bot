@@ -1,7 +1,7 @@
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema import SystemMessage, HumanMessage
-from langchain.agents import AgentType, Tool, initialize_agent
+from langchain.agents import Tool
 from langchain.agents.agent_toolkits import create_conversational_retrieval_agent
 from src.chatbot.service_abc import BaseQA
 from src.schemas import OpenaiConfig
@@ -36,13 +36,7 @@ class QaService(BaseQA):
 
     def init_agent(self, tools: List[Tool] = None):
         agent_executor = create_conversational_retrieval_agent(
-            tools=[
-                Tool.from_function(
-                    lambda query: self.basic_answer(query, query),
-                    name="useless_tool",
-                    description="Do not use this tool",
-                )
-            ],
+            tools=tools,
             llm=self.chat_llm,
             verbose=True,
             SystemMessage="""Sei l'assistente di un concessionario ed il tuo compito proporre ai clienti le macchine

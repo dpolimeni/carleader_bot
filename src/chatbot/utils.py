@@ -1,5 +1,7 @@
 ## HERE BUILD UTILS FUNCTION FOR THE SERVICE
-from typing import Dict, List
+from typing import Dict, List, Any
+from langchain.agents import Tool
+import json
 
 
 def format_cars(cars_dict: List[Dict[str, str]]) -> str:
@@ -24,5 +26,20 @@ def format_cars(cars_dict: List[Dict[str, str]]) -> str:
     """
 
 
+def retrieve_cars(placeholder: Any):
+    with open("src/cars.json", "r") as f:
+        cars = json.load(f)
+
+    formatted_json = json.dumps(cars, indent=2)
+    return formatted_json
+
+
 def init_tools():
-    return ["pippo"]
+    tools = [
+        Tool.from_function(
+            func=retrieve_cars,
+            description="Usa questo tool per conoscere le macchine disponibili nel concessionario",
+            name="retrieve_cars",
+        )
+    ]
+    return tools
