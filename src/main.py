@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from langchain.embeddings.openai import OpenAIEmbeddings
 import os
 from src.chatbot.routes import router as chatbot_router
+from src.auth.routes import router as auth_router
 from src.schemas import CarInfo
 from langchain.schema import Document
 from src.config import configuration
@@ -32,6 +33,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Chatbot app", lifespan=lifespan)
 
 app.include_router(chatbot_router, prefix="/chatbot", tags=["chatbot"])
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 
 @app.get("/cars/all", response_model=List[CarInfo])
