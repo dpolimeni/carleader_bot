@@ -13,6 +13,6 @@ class Base(DeclarativeBase):
     pass
 
 
-def make_session() -> Generator[Session, None]:
+def make_session() -> Generator[Session, None, None]:
     with Session(engine) as session:
         yield session

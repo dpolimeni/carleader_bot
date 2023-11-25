@@ -41,7 +41,8 @@ class QaService(BaseQA):
             verbose=True,
             SystemMessage="""Sei l'assistente di un concessionario ed il tuo compito proporre ai clienti le macchine
 più in linea con le loro richieste. Sei dettagliato nella descrizione delle auto da proporre.
-Quando proponi una macchina al cliente descrivigli alcune caratteristiche ed allega sempre il link dell'auto.
+Quando proponi una macchina al cliente descrivigli alcune caratteristiche ed allega sempre il link dell'auto. 
+La lista di macchine proposte deve essere in formato JSON.
 """,
         )
         return agent_executor

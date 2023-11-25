@@ -1,4 +1,4 @@
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter
 import uuid
 import json
 from fastapi.exceptions import HTTPException
@@ -8,13 +8,19 @@ from src.config import configuration
 from src.chatbot.service import QaService
 from src.chatbot.utils import init_tools
 from langchain.vectorstores import FAISS
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.chat_models import ChatOpenAI
 
 router = APIRouter()
 
 agents = {}
 chats = {}
-tools = init_tools()
+chat_llm = ChatOpenAI(
+    temperature=0,
+    openai_api_key=configuration.openai_key,
+    model=configuration.chat_model_version,
+    request_timeout=15,
+)
+tools = init_tools(chat_llm)
 
 
 @router.get("/chat", response_model=Conversation)
@@ -28,14 +34,8 @@ async def get_messages(chat_id: str):
 
 @router.post("/chat", response_model=ChatMessage)
 async def chat(message: ChatMessage):
-    user = message.chat_user if message.chat_user else str(uuid.uuid4())
+    user = message.chat_id if message.chat_id else str(uuid.uuid4())
     query = message.message
-
-    embeddings = OpenAIEmbeddings(api_key=configuration.openai_key)
-    new_db = FAISS.load_local("faiss_index", embeddings)
-    docs = new_db.similarity_search(query)
-
-    conversation = "\n".join([m.sender + ": " + m.message for m in chats.get(user, [])])
 
     openai_config = OpenaiConfig(
         openai_key=configuration.openai_key,
@@ -53,7 +53,8 @@ async def chat(message: ChatMessage):
 
     ## TODO save messages somewhere
 
-    response = agent.invoke({"input": f"Cliente: {query}"})["output"]
+    response = agent.invoke({"input": f"Cliente: {query}"})  # ["output"].strip()
+    print(response)
     # relevant_cars = "\n".join([d.page_content for d in docs])
 
     # prompt = f"""Ti verranno fornite la lista delle macchine disponibili in un concessionario.
@@ -67,7 +68,16 @@ async def chat(message: ChatMessage):
     # {relevant_cars}
     #    """
     # response = await qa.basic_answer(query, context=prompt)
+    description = await qa.basic_answer(
+        query="Fai una descrizione del seguente JSON", context=str(response)
+    )
+    chats[user].extend([Message(sender="AI", message=description)])
 
-    chats[user].extend([Message(sender="AI", message=response)])
-
-    return ChatMessage(**{"sender": "AI", "message": response, "chat_user": user})
+    return ChatMessage(
+        **{
+            "sender": "AI",
+            "message": description,
+            "chat_id": user,
+            "extra": str(response),
+        }
+    )
