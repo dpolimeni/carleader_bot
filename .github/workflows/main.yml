@@ -11,6 +11,11 @@ on:
 jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
+
+        env:
+          OPENAY_KEY: ${{ secrets.OPENAY_KEY }}
+          CHAT_MODEL_VERSION: ${{ secrets.CHAT_MODEL_VERSION }}
+        
         steps:
         # checkout the repo
         - name: 'Checkout GitHub Action'
