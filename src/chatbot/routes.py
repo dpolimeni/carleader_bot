@@ -54,7 +54,6 @@ async def chat(message: ChatMessage):
     ## TODO save messages somewhere
 
     response = agent.invoke({"input": f"Cliente: {query}"})  # ["output"].strip()
-    print("RESPONSE", response["output"])
     # relevant_cars = "\n".join([d.page_content for d in docs])
 
     # prompt = f"""Ti verranno fornite la lista delle macchine disponibili in un concessionario.
@@ -68,16 +67,16 @@ async def chat(message: ChatMessage):
     # {relevant_cars}
     #    """
     # response = await qa.basic_answer(query, context=prompt)
-    description = await qa.basic_answer(
-        query="Fai una descrizione delle macchine nel seguente JSON e proponile ad un cliente",
-        context=str(response["output"]),
-    )
-    chats[user].extend([Message(sender="AI", message=description)])
+    # description = await qa.basic_answer(
+    #    query="Fai una descrizione delle macchine presenti e proponile ad un cliente",
+    #    context=str(response["output"]),
+    # )
+    chats[user].extend([Message(sender="AI", message=str(response["output"]))])
 
     return ChatMessage(
         **{
             "sender": "AI",
-            "message": description,
+            "message": response["output"],
             "chat_id": user,
             "extra": response["output"],
         }
