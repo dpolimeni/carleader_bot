@@ -95,7 +95,7 @@ def get_car_data(cars_list_url):
         car_name, price = get_name_price(BASE_URL + link)
         image_link = get_image_link(BASE_URL + link)
         car_info = {
-            "link": link,
+            "link": BASE_URL + link,
             "name": car_name,
             "price": price,
             "image_link": image_link,
