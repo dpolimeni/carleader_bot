@@ -20,6 +20,7 @@ class CarInfo(BaseModel):
     warranty: str
     registration: str
     link: str
+    image_link: str
     exposition: str
 
 

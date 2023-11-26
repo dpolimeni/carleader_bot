@@ -75,6 +75,17 @@ def get_name_price(url):
     return name, price
 
 
+def get_image_link(url):
+    image_container = scrape_and_find_by_class(
+        url,
+        "listing-slider",
+    )[
+        0
+    ]  # "flex-active-slide")
+    image_link = BASE_URL + image_container.find_all("a")[0].get("href")
+    return image_link
+
+
 def get_car_data(cars_list_url):
     cars_info = []
     cars_container = scrape_and_find_by_class(cars_list_url, class_cars_container)
@@ -82,7 +93,13 @@ def get_car_data(cars_list_url):
 
     for link in cars_links:
         car_name, price = get_name_price(BASE_URL + link)
-        car_info = {"link": link, "name": car_name, "price": price}
+        image_link = get_image_link(BASE_URL + link)
+        car_info = {
+            "link": link,
+            "name": car_name,
+            "price": price,
+            "image_link": image_link,
+        }
         car_data = scrape_and_find_by_class(BASE_URL + link, "technical")
         all_data = car_data[0].find_all("tr")
         for el in all_data:
