@@ -8,28 +8,6 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from src.config import configuration
 
 
-def format_cars(cars_dict: List[Dict[str, str]]) -> str:
-    explanation = """La lista di macchine che ti verrnno fornite hanno queste specifiche: 
-    name: nome dell'auto
-    category: categoria se usato o nuovo
-    traction: tipo di trazione (anteriore posteriore 4x4)
-    power_type: il tipo di alimentazione (Gas, DIesel o benzina)
-    gearbox: Il cambio se automatico o manuale
-    engine: Cilindrata del motore
-    power: potenza del motore Kilowatt (Cavalli)
-    mileage: Chilometri percorsi
-    price: Prezzo in euro
-    type: Tipo di macchina (Utilitaria/Berlina)
-    seats: Numero di posti
-    doors: Numero di porte
-    color_interior: Colori interni
-    color_exterior: Colori esterni
-    warranty: Garaniza dell'auto
-    registration: data di immatricolazione 
-    link: link all'auto online
-    """
-
-
 def jsonify_cars(chat_llm, num_iters: int, cars_proposal: str):
     prompt = f"""Il tuo compito e formattare la lista di macchine che ti viene fornita in formato JSON.
     Ritorna in output solamente il JSON.
@@ -85,7 +63,7 @@ def init_tools(chat_llm):
     tools = [
         Tool.from_function(
             func=lambda cars_list: retrieve_cars(chat_llm, 3, cars_list),
-            description="Usa questo tool per conoscere le macchine disponibili nel concessionario. In input prende una stringa che descrive le caratteristiche che cerchi in un'auto.",
+            description="Usa questo tool per sapere le informazioni delle auto più adatte alla richiesta del cliente. In input prende una stringa che descrive le caratteristiche che cerchi in un'auto.",
             name="retrieve_cars",
             return_direct=True,
         ),
