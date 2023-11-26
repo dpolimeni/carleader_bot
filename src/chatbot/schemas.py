@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Dict, Any
 
 
 class Message(BaseModel):
@@ -8,7 +8,10 @@ class Message(BaseModel):
 
 
 class ChatMessage(Message):
-    chat_user: str = Field(None, description="identifier of the chat")
+    chat_id: str = Field(None, description="identifier of the chat")
+    extra: Any = Field(
+        None, description="Extra parametri di messaggio ne caso venga ritornato un JSON"
+    )
 
 
 class Conversation(BaseModel):
