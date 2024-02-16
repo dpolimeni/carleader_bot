@@ -21,7 +21,7 @@ def build_content(car: Dict[str, str | int]) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Load the ML model
-    embeddings = OpenAIEmbeddings(api_key=configuration.openai_key)
+    embeddings = OpenAIEmbeddings(openai_api_key=configuration.openai_key)
     with open("src/cars.json", "r") as f:
         cars = json.load(f)
         docs = [Document(page_content=build_content(c), metadata=c) for c in cars]
