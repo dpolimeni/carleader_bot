@@ -5,5 +5,6 @@ COPY . .
 RUN pip install -r requirements.txt
 
 ## RUN alembic upgrade head
+EXPOSE 80
 
 CMD uvicorn src.main:app --host 0.0.0.0 --port 80
