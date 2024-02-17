@@ -21,12 +21,13 @@ def build_content(car: Dict[str, str | int]) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Load the ML model
-    embeddings = OpenAIEmbeddings(openai_api_key=configuration.openai_key)
-    with open("src/cars.json", "r") as f:
-        cars = json.load(f)
-        docs = [Document(page_content=build_content(c), metadata=c) for c in cars]
-        db = FAISS.from_documents(docs, embeddings)
-    db.save_local("faiss_index")
+    #embeddings = OpenAIEmbeddings(openai_api_key=configuration.openai_key)
+    #with open("src/cars.json", "r") as f:
+    #    cars = json.load(f)
+    #    docs = [Document(page_content=build_content(c), metadata=c) for c in cars]
+    #    db = FAISS.from_documents(docs, embeddings)
+    #db.save_local("faiss_index")
+    
     logging.info("Loading the ML model")
     logging.info("Loading the database")
     yield
